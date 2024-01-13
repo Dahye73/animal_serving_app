@@ -50,18 +50,17 @@ class _DistributePage extends State<DistributePage> {
         .collection('record')
         .get();
 
-
     feedingRecords.clear(); // 변경: 이전 기록을 초기화
 
     recordSnapshot.docs.forEach((doc) {
       final remainingFoodData = doc.data()['남은배식량'] as Map<String, dynamic>;
-      final remainingFoodDate = (remainingFoodData['date'] as Timestamp)
-          .toDate();
+      final remainingFoodDate =
+          (remainingFoodData['date'] as Timestamp).toDate();
       final remainingFoodWeight = remainingFoodData['weight'] as String;
 
       final feedingAmountData = doc.data()['배식량'] as Map<String, dynamic>;
-      final feedingAmountDate = (feedingAmountData['date'] as Timestamp)
-          .toDate();
+      final feedingAmountDate =
+          (feedingAmountData['date'] as Timestamp).toDate();
       final feedingAmountWeight = feedingAmountData['weight'] as String;
 
       final recordDate = feedingAmountDate.toString().split(' ')[0];
@@ -84,7 +83,6 @@ class _DistributePage extends State<DistributePage> {
     final formattedTime =
         '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
     return '$formattedDate $formattedTime';
-
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -101,12 +99,42 @@ class _DistributePage extends State<DistributePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 186, 181, 244),
-        elevation: 0,
-        title: Text(
-          '${petName}의 배식',
-          style: TextStyle(fontWeight: FontWeight.bold),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                offset: Offset(0, 2),
+                blurRadius: 4.0,
+              ),
+            ],
+          ),
+          child: AppBar(
+            title: Text(
+              "${petName}의 배식",
+              style: TextStyle(fontSize: 20.0),
+            ),
+            centerTitle: true,
+            backgroundColor: Color.fromARGB(255, 255, 255, 255),
+            elevation: 0,
+            actions: [
+              TextButton(
+                child: Icon(
+                  Icons.logout,
+                  color: const Color.fromARGB(255, 53, 53, 53),
+                ),
+                onPressed: () {
+                  context.read<AuthService>().signOut();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
       body: Padding(

@@ -19,6 +19,7 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: Container(
@@ -32,6 +33,7 @@ class _SettingPageState extends State<SettingPage> {
             ],
           ),
           child: AppBar(
+            automaticallyImplyLeading: false,
             title: Text(
               "Setting",
               style: TextStyle(fontSize: 17.0),

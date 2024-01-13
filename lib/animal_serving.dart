@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import 'HealthPage.dart';
 import 'auth_service.dart';
 import 'bucket_service.dart';
 import 'loginpage.dart';
@@ -41,7 +42,6 @@ class _HomePageState extends State<HomePage2> {
     petName = '';
     _getPetNamesFromFirestore();
   }
-
 
   Future<void> _getPetNamesFromFirestore() async {
     final user = context.read<AuthService>().currentUser();
@@ -84,7 +84,7 @@ class _HomePageState extends State<HomePage2> {
             Text(
               text1,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage2> {
                 Text(
                   text2,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -104,7 +104,7 @@ class _HomePageState extends State<HomePage2> {
                 Text(
                   suffix,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -149,275 +149,289 @@ class _HomePageState extends State<HomePage2> {
         final user = authService.currentUser()!;
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text('Details Pet'),
-            centerTitle: true,
-            backgroundColor: Color.fromARGB(255, 186, 181, 244),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  Icons.logout,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  context.read<AuthService>().signOut();
-
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => LoginPage()),
-                  );
-                },
-              ),
-            ],
-          ),
-          body: Column(
-            children: [
-              SizedBox(height: 8),
-              Container(
-                height: size.height * 0.28,
-                child: PageView.builder(
-                  controller: PageController(
-                    viewportFraction: boxWidthFraction,
-                    keepPage: false,
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(kToolbarHeight),
+            child: Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    offset: Offset(0, 2),
+                    blurRadius: 4.0,
                   ),
-                  itemCount: petNames.length,
-                  itemBuilder: (context, index) {
-                    double iconHeight = boxHeight * 0.55;
-                    double smallBoxSize_w = boxHeight * 0.44; // 반려동물 3박스 사이즈
-                    double smallBoxSize_h = boxHeight * 0.27;
+                ],
+              ),
+              child: AppBar(
+                title: Text(
+                  "Details Pet",
+                  style: TextStyle(fontSize: 20.0),
+                ),
+                centerTitle: true,
+                backgroundColor: Color.fromARGB(255, 255, 255, 255),
+                elevation: 0,
+                actions: [
+                  TextButton(
+                    child: Icon(
+                      Icons.logout,
+                      color: const Color.fromARGB(255, 53, 53, 53),
+                    ),
+                    onPressed: () {
+                      context.read<AuthService>().signOut();
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(height: 8),
+                Container(
+                  height: size.height * 0.28,
+                  child: PageView.builder(
+                    controller: PageController(
+                      viewportFraction: boxWidthFraction,
+                      keepPage: false,
+                    ),
+                    itemCount: petNames.length,
+                    itemBuilder: (context, index) {
+                      double iconHeight = boxHeight * 0.55;
+                      double smallBoxSize_w = boxHeight * 0.44; // 반려동물 3박스 사이즈
+                      double smallBoxSize_h = boxHeight * 0.27;
 
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        left: (index == 0) ? width_margin / 2 : 0.0,
-                        right: width_margin / 2,
-                      ),
-                      child: GestureDetector(
-                        child: Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Container(
-                            padding: EdgeInsets.all(10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.pets,
-                                      size: iconHeight,
-                                      color: Color.fromARGB(255, 245, 179, 176),
-                                    ),
-                                    SizedBox(width: 16),
-                                    Align(
-                                      alignment: Alignment.topCenter,
-                                      child: Text(
-                                        '${petNames[index]}',
-                                        style: TextStyle(
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.bold,
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          left: (index == 0) ? width_margin / 2 : 0.0,
+                          right: width_margin / 2,
+                        ),
+                        child: GestureDetector(
+                          child: Card(
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.all(10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.pets,
+                                        size: iconHeight,
+                                        color:
+                                            Color.fromARGB(255, 245, 179, 176),
+                                      ),
+                                      SizedBox(width: 16),
+                                      Align(
+                                        alignment: Alignment.topCenter,
+                                        child: Text(
+                                          '${petNames[index]}',
+                                          style: TextStyle(
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Spacer(),
-                                    // Spacer를 사용하여 남은 공간을 모두 차지하게 만듭니다.
-                                    IconButton(
-                                      // 문서 모양의 아이콘 버튼을 추가합니다.
-                                      icon: Icon(Icons.description),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => PetEditPage(
-                                                  petName: petNames[index])),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    smallBox(
-                                        'Gender',
-                                        petSexs[index],
-                                        '',
-                                        smallBoxSize_w,
-                                        smallBoxSize_h,
-                                        '80FF9900'), // 성별 표시,
-                                    SizedBox(width: 9),
-                                    smallBox(
-                                        'Ages',
-                                        petAges[index],
-                                        'Years',
-                                        smallBoxSize_w,
-                                        smallBoxSize_h,
-                                        '8099CCFF'), // 나이 표시
-                                    SizedBox(width: 9),
-                                    smallBox(
-                                        'Weight',
-                                        petWeights[index],
-                                        'Kg',
-                                        smallBoxSize_w,
-                                        smallBoxSize_h,
-                                        '8000FFCC'), // 무게 표시
-                                  ],
-                                ),
-                              ],
+                                      Spacer(),
+                                      // Spacer를 사용하여 남은 공간을 모두 차지하게 만듭니다.
+                                      IconButton(
+                                        // 문서 모양의 아이콘 버튼을 추가합니다.
+                                        icon: Icon(Icons.description),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    PetEditPage(
+                                                        petName:
+                                                            petNames[index])),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      smallBox(
+                                          'Gender',
+                                          petSexs[index],
+                                          '',
+                                          smallBoxSize_w,
+                                          smallBoxSize_h,
+                                          '80F8B691'), // 성별 표시,
+                                      SizedBox(width: 9),
+                                      smallBox(
+                                          'Ages',
+                                          petAges[index],
+                                          'Years',
+                                          smallBoxSize_w,
+                                          smallBoxSize_h,
+                                          '80B9D9FF'), // 나이 표시
+                                      SizedBox(width: 9),
+                                      smallBox(
+                                          'Weight',
+                                          petWeights[index],
+                                          'Kg',
+                                          smallBoxSize_w,
+                                          smallBoxSize_h,
+                                          '60A1E1E5'), // 무게 표시
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(height: 6),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                // 좌우 마진을 화면 너비의 5%로 설정
-                child: Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                      );
+                    },
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Text('배식',
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold)),
-                            // '배식' 텍스트
-                            SizedBox(width: 5),
-                            // 아이콘과 텍스트 사이의 간격
-                            Icon(Icons.rice_bowl, color: Colors.deepPurple),
-                            // 밥 아이콘
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: jobController,
-                                cursorColor: Colors.deepPurple,
-                                // Set cursor color
-                                decoration: InputDecoration(
-                                  hintText: "배식 g 입력",
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Colors
-                                            .deepPurple), // Set underline color
+                ),
+                SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  // 좌우 마진을 화면 너비의 5%로 설정
+                  child: Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Text('배식',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
+                              // '배식' 텍스트
+                              SizedBox(width: 5),
+                              // 아이콘과 텍스트 사이의 간격
+                              Icon(Icons.rice_bowl,
+                                  color: Color.fromARGB(255, 90, 90, 90)),
+                              // 밥 아이콘
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: jobController,
+                                  cursorColor: Color.fromARGB(255, 66, 66, 66),
+                                  // Set cursor color
+                                  decoration: InputDecoration(
+                                    hintText: "배식 g 입력",
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: const Color.fromARGB(255, 57,
+                                              57, 57)), // Set underline color
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Color.fromARGB(255, 186, 181, 244),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Color.fromARGB(67, 159, 159, 159),
+                                ),
+                                child: Icon(
+                                  Icons.send,
+                                  color: Color.fromARGB(255, 53, 53, 53),
+                                ), // 밥 아이콘
+                                onPressed: () {
+                                  if (jobController.text.isNotEmpty &&
+                                      petName != null) {
+                                    final jobAmount = jobController.text;
+                                    animalServingService.create(
+                                        jobAmount, petName!);
+                                    showCompletionDialog(petName!, jobAmount);
+                                  }
+                                },
                               ),
-                              child: Icon(Icons.send), // 밥 아이콘
-                              onPressed: () {
-                                if (jobController.text.isNotEmpty &&
-                                    petName != null) {
-                                  final jobAmount = jobController.text;
-                                  animalServingService.create(
-                                      jobAmount, petName!);
-                                  showCompletionDialog(petName!, jobAmount);
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 8),
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.all(8.0),
-                  margin: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width * 0.06),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: ListView(
-                    children: [
-                      // 선 그래프
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                          height: 200,
-                          child: LineChart(
-                            LineChartData(
-                              gridData: FlGridData(show: false),
-                              titlesData: FlTitlesData(show: false),
-                              borderData: FlBorderData(
-                                show: true,
-                                border: Border.all(
-                                  color: const Color(0xff37434d),
-                                  width: 1,
-                                ),
-                              ),
-                              minX: 0,
-                              maxX: 7,
-                              minY: 0,
-                              maxY: 6,
-                              lineBarsData: [
-                                LineChartBarData(
-                                  spots: [
-                                    FlSpot(0, 3),
-                                    FlSpot(1, 1),
-                                    FlSpot(2, 2),
-                                    FlSpot(3, 1.5),
-                                    FlSpot(4, 2.8),
-                                    FlSpot(5, 2.2),
-                                    FlSpot(6, 3),
-                                  ],
-                                  isCurved: true,
-                                  dotData: FlDotData(show: false),
-                                  belowBarData: BarAreaData(show: false),
-                                ),
-                              ],
-                            ),
+                SizedBox(height: 8),
+                SizedBox(height: 20.0), // 상단 여백
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DistributePage(petName: petName!),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      height: 80.0, // 배식 상황 카드의 높이 조정
+                      child: Card(
+                        child: ListTile(
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 16.0),
+                          leading: Icon(Icons.restaurant),
+                          title: Text(
+                            '배식 상황',
+                            style: TextStyle(fontSize: 18.0),
+                          ),
+                          subtitle: Text(
+                            '현재 반려동물의 배식상황을 확인해보세요.',
+                            style: TextStyle(fontSize: 12.0),
                           ),
                         ),
                       ),
-                      // 파이 차트
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                          height: 200,
-                          child: PieChart(
-                            PieChartData(
-                              sections: [
-                                PieChartSectionData(
-                                  value: 40,
-                                  color: Colors.red,
-                                  title: '40%',
-                                ),
-                                PieChartSectionData(
-                                  value: 30,
-                                  color: Colors.green,
-                                  title: '30%',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(height: 20.0), // 리스트 항목 사이 간격
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HealthPage(petName: petName!),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      height: 80.0, // 건강 상태 카드의 높이 조정
+                      child: Card(
+                        child: ListTile(
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 16.0),
+                          leading: Icon(Icons.favorite),
+                          title: Text(
+                            '건강 상태',
+                            style: TextStyle(fontSize: 18.0),
+                          ),
+                          subtitle: Text(
+                            '반려동물의 건강상태를 확인해보세요.',
+                            style: TextStyle(fontSize: 12.0),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           bottomNavigationBar: CustomBottomNavigationBar(
             currentIndex: _selectedIndex,

@@ -60,8 +60,9 @@ class _StreamingPageState extends State<StreamingPage> {
             ],
           ),
           child: AppBar(
+            automaticallyImplyLeading: false,
             title: Text(
-              "Setting",
+              "Streaming",
               style: TextStyle(fontSize: 17.0),
             ),
             centerTitle: true,
@@ -86,7 +87,7 @@ class _StreamingPageState extends State<StreamingPage> {
         ),
       ),
       body: Container(
-        color: Color.fromARGB(255, 240, 240, 240),
+        color: Color.fromARGB(255, 255, 255, 255),
         padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

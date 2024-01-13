@@ -40,6 +40,7 @@ class _InfoChangePageState extends State<InfoChangePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
         child: Container(
@@ -53,6 +54,7 @@ class _InfoChangePageState extends State<InfoChangePage> {
             ],
           ),
           child: AppBar(
+            automaticallyImplyLeading: false,
             title: Text(
               "Information",
               style: TextStyle(fontSize: 17.0),

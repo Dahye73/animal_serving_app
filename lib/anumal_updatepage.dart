@@ -1,7 +1,11 @@
+import 'package:bucket_list_with_firebase2/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'Streamingpage.dart';
+import 'bottomNavigationBar.dart';
+import 'loginpage.dart';
 import 'main.dart';
 import 'information_service.dart';
 
@@ -56,43 +60,6 @@ class _PetEditPageState extends State<PetEditPage> {
     });
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-
-      switch (index) {
-        case 0:
-          Navigator.push(
-            context,
-            //MaterialPageRoute(builder: (_) => StreamingPage()),
-            MaterialPageRoute(builder: (_) => MyApp()),
-          );
-          break;
-        case 1:
-          Navigator.push(
-            context,
-            //MaterialPageRoute(builder: (_) => InformationService()),
-            MaterialPageRoute(builder: (_) => StreamingPage()),
-          );
-          break;
-        case 2:
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => StreamingPage()),
-          );
-          break;
-        case 3:
-          Navigator.push(
-            context,
-            //MaterialPageRoute(builder: (_) => MyApp()),
-            MaterialPageRoute(builder: (_) => InformationService()),
-          );
-
-          break;
-      }
-    });
-  }
-
   Widget smallBox(String text1, String text2, String suffix, double w_size,
       double h_size, String hexColor) {
     Color bgColor = Color(int.parse('0x' + hexColor));
@@ -112,7 +79,7 @@ class _PetEditPageState extends State<PetEditPage> {
             Text(
               text1,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -124,7 +91,7 @@ class _PetEditPageState extends State<PetEditPage> {
                 Text(
                   text2,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -132,7 +99,7 @@ class _PetEditPageState extends State<PetEditPage> {
                 Text(
                   suffix,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -144,6 +111,58 @@ class _PetEditPageState extends State<PetEditPage> {
     );
   }
 
+  Future<void> _deletePetFromFirestore(String petName) async {
+    final user = context.read<AuthService>().currentUser();
+    final uid = user?.uid;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('알림'),
+          content: Text('${petName} 등록을 취소합니다.'),
+          actions: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Color.fromARGB(255, 186, 181, 244),
+              ),
+              child: Text('확인'),
+              onPressed: () {
+                FirebaseFirestore.instance
+                    .collection('pet')
+                    .where('uid', isEqualTo: uid)
+                    .where('petname', isEqualTo: petName)
+                    .get()
+                    .then((QuerySnapshot querySnapshot) {
+                  querySnapshot.docs.forEach((doc) {
+                    doc.reference.delete();
+                    setState(() {
+                      petNames.remove(petName);
+                    });
+                  });
+                });
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => MyApp()),
+                );
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Colors.grey,
+              ),
+              child: Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size; // 화면 크기 가져오기
@@ -151,192 +170,276 @@ class _PetEditPageState extends State<PetEditPage> {
     double boxWidthFraction = 0.95; // 반려동물 박스 화면 80%
     double boxHeight = size.height * 0.28;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          '정보 수정',
-          style: TextStyle(
-            color: const Color.fromARGB(255, 133, 130, 130),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                offset: Offset(0, 2),
+                blurRadius: 4.0,
+              ),
+            ],
+          ),
+          child: AppBar(
+            automaticallyImplyLeading: true,
+            title: Text(
+              "정보수정",
+              style: TextStyle(fontSize: 20.0),
+            ),
+            centerTitle: true,
+            backgroundColor: Color.fromARGB(255, 255, 255, 255),
+            elevation: 0,
+            actions: [
+              TextButton(
+                child: Icon(
+                  Icons.logout,
+                  color: const Color.fromARGB(255, 53, 53, 53),
+                ),
+                onPressed: () {
+                  context.read<AuthService>().signOut();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
+                },
+              ),
+            ],
           ),
         ),
-        backgroundColor: Color.fromARGB(255, 255, 255, 255),
-        iconTheme: IconThemeData(
-          color: const Color.fromARGB(255, 133, 130, 130), // 원하는 아이콘 컬러로 변경하세요
-        ),
       ),
-      body: Column(
-        children: [
-          SizedBox(height: 8),
-          Container(
-            height: size.height * 0.28,
-            child: PageView.builder(
-              controller: PageController(
-                viewportFraction: boxWidthFraction,
-                keepPage: false,
-              ),
-              itemCount: petNames.length,
-              itemBuilder: (context, index) {
-                double iconHeight = boxHeight * 0.55;
-                double smallBoxSize_w = boxHeight * 0.44; // 반려동물 3박스 사이즈
-                double smallBoxSize_h = boxHeight * 0.27;
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(height: 8),
+            Container(
+              height: size.height * 0.28,
+              child: PageView.builder(
+                controller: PageController(
+                  viewportFraction: boxWidthFraction,
+                  keepPage: false,
+                ),
+                itemCount: petNames.length,
+                itemBuilder: (context, index) {
+                  double iconHeight = boxHeight * 0.55;
+                  double smallBoxSize_w = boxHeight * 0.44; // 반려동물 3박스 사이즈
+                  double smallBoxSize_h = boxHeight * 0.27;
 
-                return Padding(
-                  padding: EdgeInsets.only(
-                    left: (index == 0) ? width_margin / 2 : 0.0,
-                    right: width_margin / 2,
-                  ),
-                  child: GestureDetector(
-                    child: Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.all(10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.pets,
-                                  size: iconHeight,
-                                  color: Color.fromARGB(255, 245, 179, 176),
-                                ),
-                                SizedBox(width: 16),
-                                Align(
-                                  alignment: Alignment.topCenter,
-                                  child: Text(
-                                    '${petNames[index]}',
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      left: (index == 0) ? width_margin / 2 : 0.0,
+                      right: width_margin / 2,
+                    ),
+                    child: GestureDetector(
+                      child: Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Container(
+                          padding: EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.pets,
+                                    size: iconHeight,
+                                    color: Color.fromARGB(255, 245, 179, 176),
+                                  ),
+                                  SizedBox(width: 16),
+                                  Align(
+                                    alignment: Alignment.topCenter,
+                                    child: Text(
+                                      '${petNames[index]}',
+                                      style: TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 8),
-                            Row(
-                              children: [
-                                smallBox('Gender', petSexs[index], '',
-                                    smallBoxSize_w, smallBoxSize_h, '80FF9900'),
-                                // 성별 표시,
-                                SizedBox(width: 9),
-                                smallBox('Ages', petAges[index], 'Years',
-                                    smallBoxSize_w, smallBoxSize_h, '8099CCFF'),
-                                // 나이 표시
-                                SizedBox(width: 9),
-                                smallBox('Weight', petWeights[index], 'Kg',
-                                    smallBoxSize_w, smallBoxSize_h, '8000FFCC'),
-                                // 무게 표시
-                              ],
-                            ),
-                          ],
+                                  Spacer(),
+                                  // Spacer를 사용하여 남은 공간을 모두 차지하게 만듭니다.
+                                  IconButton(
+                                    onPressed: () {
+                                      _deletePetFromFirestore(petName!);
+                                    },
+                                    icon: Icon(
+                                      Icons.delete,
+                                      color: Color.fromARGB(255, 255, 18, 18),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  smallBox(
+                                      'Gender',
+                                      petSexs[index],
+                                      '',
+                                      smallBoxSize_w,
+                                      smallBoxSize_h,
+                                      '80F8B691'), // 성별 표시,
+                                  SizedBox(width: 9),
+                                  smallBox(
+                                      'Ages',
+                                      petAges[index],
+                                      'Years',
+                                      smallBoxSize_w,
+                                      smallBoxSize_h,
+                                      '80B9D9FF'), // 나이 표시
+                                  SizedBox(width: 9),
+                                  smallBox(
+                                      'Weight',
+                                      petWeights[index],
+                                      'Kg',
+                                      smallBoxSize_w,
+                                      smallBoxSize_h,
+                                      '60A1E1E5'), // 무게 표시
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(16.0, 23.0, 16.0, 16.0), // 여백 조정
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start, // 가로 상단 정렬
-              children: [
-                SizedBox(height: 16.0),
-                TextField(
-                  controller: _nameController,
-                  cursorColor: Colors.deepPurple,
-                  decoration: InputDecoration(
-                    labelText: '이름',
-                    hintStyle:
-                        TextStyle(color: Color.fromARGB(255, 189, 189, 204)),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                          color: Colors.deepPurple), // 커서를 올렸을 때의 밑줄 색상
+            Padding(
+              padding: EdgeInsets.fromLTRB(16.0, 23.0, 16.0, 16.0), // 여백 조정
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start, // 가로 상단 정렬
+                children: [
+                  SizedBox(height: 16.0),
+                  TextFormField(
+                    controller: _nameController,
+                    cursorColor: Colors.deepPurple,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: 10.0, horizontal: 10.0),
+                      labelText: '이름',
+                      labelStyle: TextStyle(color: Colors.black),
+                      hintStyle: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: Color.fromARGB(255, 189, 189, 204),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide(
+                            color: Color.fromARGB(255, 195, 195, 195)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide(
+                            color: Color.fromARGB(255, 195, 195, 195)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide(
+                            color: Color.fromARGB(255, 137, 137, 137)),
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: 12.0),
-                TextField(
-                  controller: _weightController,
-                  cursorColor: Colors.deepPurple,
-                  decoration: InputDecoration(
-                    labelText: '몸무게',
-                    hintStyle:
-                        TextStyle(color: Color.fromARGB(255, 189, 189, 204)),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                          color: Colors.deepPurple), // 커서를 올렸을 때의 밑줄 색상
+                  SizedBox(height: 12.0),
+                  TextFormField(
+                    controller: _weightController,
+                    cursorColor: Colors.deepPurple,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: 10.0, horizontal: 10.0),
+                      labelText: '몸무게',
+                      labelStyle: TextStyle(color: Colors.black),
+                      hintStyle: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: Color.fromARGB(255, 189, 189, 204),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide(
+                            color: Color.fromARGB(255, 195, 195, 195)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide(
+                            color: Color.fromARGB(255, 195, 195, 195)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide(
+                            color: Color.fromARGB(255, 137, 137, 137)),
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: 24.0),
-                ElevatedButton(
-                  onPressed: () {
-                    _updatePetInfo();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Color.fromARGB(255, 186, 181, 244), // 수정 버튼의 배경색 변경
+                  SizedBox(height: 24.0),
+                  Container(
+                    width: MediaQuery.of(context).size.width, // 화면의 넓이를 사용
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color.fromARGB(189, 255, 215, 238), // 시작 색
+                          Color.fromARGB(136, 220, 180, 250), // 끝 색
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _updatePetInfo();
+                      },
+                      style: ButtonStyle(
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                        backgroundColor: MaterialStateProperty.all(
+                          Colors.transparent,
+                        ),
+                        shadowColor:
+                            MaterialStateProperty.all(Colors.transparent),
+                        padding: MaterialStateProperty.all(EdgeInsets.all(15)),
+                        foregroundColor:
+                            MaterialStateProperty.all(Colors.white),
+                        overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                          (Set<MaterialState> states) {
+                            if (states.contains(MaterialState.pressed))
+                              return Color.fromARGB(255, 154, 100, 255)
+                                  .withOpacity(0.5);
+                            return null;
+                          },
+                        ),
+                        elevation: MaterialStateProperty.all(0),
+                        side: MaterialStateProperty.all(BorderSide.none),
+                        textStyle: MaterialStateProperty.all<TextStyle>(
+                          TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.normal),
+                        ),
+                      ),
+                      child: Text(
+                        '수정',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ),
                   ),
-                  child: Text('수정'),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        margin: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-        // 상하좌우 마진 설정
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 5,
-              blurRadius: 7,
+                ],
+              ),
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: Container(
-            height: 60,
-            child: BottomNavigationBar(
-              items: const <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.camera_alt),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.settings),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person),
-                  label: '',
-                ),
-              ],
-              currentIndex: _selectedIndex,
-              selectedItemColor: Colors.amber[800],
-              unselectedItemColor: Colors.grey,
-              onTap: _onItemTapped,
-              backgroundColor: Color.fromARGB(255, 186, 181, 244),
-              elevation: 0.0,
-              type: BottomNavigationBarType.fixed,
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-            ),
-          ),
-        ),
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        parentContext: context,
       ),
     );
   }

@@ -25,8 +25,9 @@ import 'pet_state_detail.dart';
 import 'anumal_updatepage.dart';
 import 'information.dart';
 import 'package:intl/intl.dart';
-import 'Pet_state_detail.dart';
 import 'bottomNavigationBar.dart';
+import 'package:flutter/rendering.dart';
+import 'Messaging.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +42,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => AddPetService()),
         ChangeNotifierProvider(create: (context) => AnimalServingService()),
       ],
-      child: const MyApp(),
+      child: MyApp(),
     ),
   );
 }
@@ -51,7 +52,10 @@ class DefaultFirebaseOptions {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
+
+  final NotificationController notificationController =
+      Get.put(NotificationController());
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +79,7 @@ class _StartPageState extends State<StartPage> {
   List<String> petSexs = [];
   List<String> petAges = [];
   List<String> petWeights = [];
+  List<String> petValues = [];
   String? petName;
   int _selectedIndex = 0;
 
@@ -96,6 +101,7 @@ class _StartPageState extends State<StartPage> {
   @override
   void initState() {
     super.initState();
+
     // ScrollController 초기화
     scrollController = ScrollController();
 
@@ -128,7 +134,7 @@ class _StartPageState extends State<StartPage> {
           petSexs.add(doc.get('petsex'));
           petAges.add(doc.get('petage'));
           petWeights.add(doc.get('petweight'));
-
+          //petValues.add(doc.get('petvalue'));
           petName = petNames.first;
         });
       });
@@ -325,12 +331,19 @@ class _StartPageState extends State<StartPage> {
           padding: EdgeInsets.symmetric(horizontal: spacing / 2),
           child: Container(
             width: boxWidth,
-            height: 80,
             decoration: BoxDecoration(
               color: (selectedDateIndex == index)
-                  ? Color(0x80FF5733)
-                  : Color(0x8099CCFF),
+                  ? Color.fromARGB(164, 245, 205, 232)
+                  : Color.fromARGB(255, 255, 255, 255),
               borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.3),
+                  spreadRadius: 0,
+                  blurRadius: 5,
+                  offset: Offset(3, 3),
+                )
+              ],
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -404,14 +417,14 @@ class _StartPageState extends State<StartPage> {
             boxShadow: [
               BoxShadow(
                 color: Colors.black12,
-                offset: Offset(0, 2), // 아래쪽으로 오프셋
+                offset: Offset(0, 2),
                 blurRadius: 4.0,
               ),
             ],
           ),
           child: AppBar(
             title: Text(
-              "PET",
+              "AND",
               style: TextStyle(fontSize: 20.0),
             ),
             centerTitle: true,
@@ -435,207 +448,219 @@ class _StartPageState extends State<StartPage> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(13.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(
-                  'My Pets',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Container(
-                  width: 30.0,
-                  height: 30.0,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => AddPet()),
-                      );
-                    },
-                    child: Icon(
-                      Icons.add,
-                      color: Color.fromARGB(255, 65, 65, 65),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding: EdgeInsets.all(0),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            height: size.height * 0.25,
-            child: PageView.builder(
-              controller: PageController(
-                viewportFraction: boxWidthFraction,
-                keepPage: false,
-              ),
-              itemCount: petNames.length,
-              itemBuilder: (context, index) {
-                double iconHeight =
-                    MediaQuery.of(context).size.height * 0.05; // 수정됨
-                double smallBoxSize_w =
-                    MediaQuery.of(context).size.width * 0.1; // 수정됨
-                double smallBoxSize_h =
-                    MediaQuery.of(context).size.height * 0.07; // 수정됨
-
-                return Padding(
-                  padding: EdgeInsets.only(
-                    left: (index == 0) ? width_margin : 0.0,
-                    right: width_margin / 2,
-                  ),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              HomePage2(petName: petNames[index]),
-                        ),
-                      );
-                    },
-                    child: Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+      body: Container(
+        color: Colors.white,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(13.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      'My Pets',
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
                       ),
-                      child: Container(
-                        padding: EdgeInsets.all(10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                FittedBox(
-                                  fit: BoxFit.fitWidth,
-                                  child: Icon(
-                                    Icons.pets,
-                                    size: iconHeight,
-                                    color: Color.fromARGB(255, 245, 179, 176),
-                                  ),
-                                ),
-                                SizedBox(width: 16),
-                                Flexible(
-                                  child: Text(
-                                    '${petNames[index]}',
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                    ),
+                    Container(
+                      width: 30.0,
+                      height: 30.0,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => AddPet()),
+                          );
+                        },
+                        child: Icon(
+                          Icons.add,
+                          color: Color.fromARGB(255, 65, 65, 65),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          padding: EdgeInsets.all(0),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                height: size.height * 0.25,
+                child: PageView.builder(
+                  controller: PageController(
+                    viewportFraction: boxWidthFraction,
+                    keepPage: false,
+                  ),
+                  itemCount: petNames.length,
+                  itemBuilder: (context, index) {
+                    double iconHeight = boxHeight * 0.5;
+                    double smallBoxSize_w = boxHeight * 0.38; // 반려동물 3박스 사이즈
+                    double smallBoxSize_h = boxHeight * 0.295;
+
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        left: (index == 0) ? width_margin : width_margin / 1.3,
+                        right: width_margin / 2,
+                      ),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  HomePage2(petName: petNames[index]),
                             ),
-                            SizedBox(height: 8),
-                            Row(
+                          );
+                        },
+                        child: Card(
+                          elevation: 2,
+                          color: Color.fromARGB(255, 255, 255, 255),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                    child: smallBox(
+                                Row(
+                                  children: [
+                                    Icon(
+                                      // petValues[index] == 'dog'
+                                      //     ? Icons.pets
+                                      //     : petValues[index] == 'cat'
+                                      //         ? Icons.pets
+                                      Icons.pets,
+                                      size: iconHeight,
+                                      color: Color.fromARGB(255, 245, 179, 176),
+                                    ),
+                                    SizedBox(width: 16),
+                                    Align(
+                                      alignment: Alignment.topCenter,
+                                      child: Text(
+                                        '${petNames[index]}',
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    smallBox(
                                         'Gender',
                                         petSexs[index],
                                         '',
                                         smallBoxSize_w,
                                         smallBoxSize_h,
-                                        '80FF9900')), // 성별 표시,
-                                SizedBox(width: 9),
-                                Expanded(
-                                    child: smallBox(
+                                        '80F8B691'), // 성별 표시,
+                                    SizedBox(width: 9),
+                                    smallBox(
                                         'Ages',
                                         petAges[index],
                                         'Years',
                                         smallBoxSize_w,
                                         smallBoxSize_h,
-                                        '8099CCFF')), // 나이 표시
-                                SizedBox(width: 9),
-                                Expanded(
-                                    child: smallBox(
+                                        '80B9D9FF'), // 나이 표시
+                                    SizedBox(width: 9),
+                                    smallBox(
                                         'Weight',
                                         petWeights[index],
                                         'Kg',
                                         smallBoxSize_w,
                                         smallBoxSize_h,
-                                        '8000FFCC')), // 무게 표시
+                                        '60A1E1E5'), // 무게 표시
+                                  ],
+                                ),
                               ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(13.0),
-            child: Align(
-              alignment: Alignment.centerLeft, // 왼쪽 정렬
-              child: Text(
-                'Daily Tasks',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
+                    );
+                  },
                 ),
               ),
-            ),
-          ),
-          Container(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              controller: scrollController,
-              itemCount: datesOfCurrentMonth.length,
-              itemBuilder: (context, index) {
-                DateTime date = datesOfCurrentMonth[index];
-                return buildDateBox(date, index);
-              },
-            ),
-          ),
-          SizedBox(height: 16.0),
-          Expanded(
-            child: ListView.builder(
-              itemCount: petNames.length,
-              itemBuilder: (context, index) {
-                String petName = petNames[index];
-                double width_margin = MediaQuery.of(context).size.width * 0.05;
+              Padding(
+                padding: const EdgeInsets.all(13.0),
+                child: Align(
+                  alignment: Alignment.centerLeft, // 왼쪽 정렬
+                  child: Text(
+                    'Daily Tasks',
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                child: Card(
+                  elevation: 0.0,
+                  child: Container(
+                    padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+                    height: 100,
+                    color: Colors.white,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      controller: scrollController,
+                      itemCount: datesOfCurrentMonth.length,
+                      itemBuilder: (context, index) {
+                        DateTime date = datesOfCurrentMonth[index];
+                        return buildDateBox(date, index);
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.0),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: petNames.length,
+                itemBuilder: (context, index) {
+                  String petName = petNames[index];
 
-                return FutureBuilder<Map<String, dynamic>>(
-                  future: getTotalWeightForPet(petName),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator(); // 로딩 인디케이터
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    } else {
-                      // 데이터베이스에서 가져온 텍스트
-                      double totalWeight = snapshot.data?['totalWeight'] ?? 0.0;
-                      int count = snapshot.data?['count'] ?? 0;
-                      String actionText = '$totalWeight' + 'g 배식';
+                  return FutureBuilder<Map<String, dynamic>>(
+                    future: getTotalWeightForPet(petName),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        double totalWeight =
+                            snapshot.data?['totalWeight'] ?? 0.0;
+                        int count = snapshot.data?['count'] ?? 0;
 
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          vertical: width_margin / 2,
-                          horizontal: width_margin / 2,
-                        ),
-                        child: buildPetActionBox(
-                            petName, Icons.pets, actionText, count),
-                      );
-                    }
-                  },
-                );
-              },
-            ),
-          )
-        ],
+                        if (count == 0) {
+                          return SizedBox.shrink(); // 아무런 위젯도 반환하지 않습니다.
+                        }
+
+                        String actionText = '$totalWeight' + 'g 배식';
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: width_margin / 2,
+                            horizontal: width_margin / 2,
+                          ),
+                          child: buildPetActionBox(
+                              petName, Icons.pets, actionText, count),
+                        );
+                      }
+                    },
+                  );
+                },
+              )
+            ],
+          ),
+        ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,

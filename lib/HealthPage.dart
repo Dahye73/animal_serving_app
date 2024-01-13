@@ -55,8 +55,7 @@ class _HealthPage extends State<HealthPage> {
     healthtext = {}; // healthtext 초기화
 
     healthSnapshot.docs.forEach((doc) {
-      final healthDate =
-          (doc.get('date') as Timestamp).toDate();
+      final healthDate = (doc.get('date') as Timestamp).toDate();
       final healthTemperature = doc.get('temperature') as String;
       final healthWeight = doc.get('weight') as String;
 
@@ -89,9 +88,43 @@ class _HealthPage extends State<HealthPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 186, 181, 244),
-        title: Text('${petName}의 건강상태'),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                offset: Offset(0, 2),
+                blurRadius: 4.0,
+              ),
+            ],
+          ),
+          child: AppBar(
+            title: Text(
+              "${petName}의 건강상태",
+              style: TextStyle(fontSize: 20.0),
+            ),
+            centerTitle: true,
+            backgroundColor: Color.fromARGB(255, 255, 255, 255),
+            elevation: 0,
+            actions: [
+              TextButton(
+                child: Icon(
+                  Icons.logout,
+                  color: const Color.fromARGB(255, 53, 53, 53),
+                ),
+                onPressed: () {
+                  context.read<AuthService>().signOut();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
